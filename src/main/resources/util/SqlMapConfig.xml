@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"  
+ "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+  <settings>
+    <setting name="jdbcTypeForNull" value="NULL"/>
+  </settings>	
+
+  <typeAliases>
+    <typeAlias alias="member" type="com.newface.pro.model.MemberBean"/>
+  	<typeAlias alias="allim" type="com.newface.pro.model.AllimBean"/>
+  	<typeAlias alias="friendreq" type="com.newface.pro.model.FriendRequestBean"/> 
+  	<typeAlias alias="friendlist" type="com.newface.pro.model.FriendListBean"/>
+  	<typeAlias alias="board" type="com.newface.pro.model.BoardBean" />
+  	<typeAlias alias="reply" type="com.newface.pro.model.ReplyBean" />
+  	<typeAlias alias="mfriendBean" type="com.newface.pro.model.mfriendBean" />
+  	<typeAlias alias="wsbean" type="com.newface.pro.model.WsBean" />	
+  </typeAliases>
+</configuration>

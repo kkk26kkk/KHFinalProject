@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Member">
+	<!-- 회원 가입 -->
+	<insert id="insertMember" parameterType="member">
+		insert into member
+		(id, pw, name, phone, birth, gender, auth_status, prof_img_file, bg_img_file)
+		values
+		(#{id}, #{pw}, #{name}, #{phone}, #{birth}, #{gender}, 2, #{prof_img_file}, #{bg_img_file})
+	</insert>
+	
+	<!-- 가입된 멤버인지 조회 -->	
+	<select id="login_check" parameterType="String" resultType="member">
+		select * from member
+		where id = #{id}
+		and auth_status = 1
+	</select>
+	
+	<!-- 멤버 검색 -->
+	<select id="member_search" parameterType="java.util.Map" resultType="member">
+	  select distinct a.*, b.id2, c.accept_id
+	  from member a
+	  left outer join friendlist b
+	  on b.id1 = #{id} and a.id = b.id2
+	  left outer join friendrequest c
+	  on c.request_id = #{id} and a.id = c.accept_id
+	  where (name = #{name_phone} or phone = #{name_phone})
+	  and auth_status = 1
+	</select>
+	
+	<!-- 친구 요청 테이블에 값 저장 -->
+	<insert id="friend_request" parameterType="friendreq">
+	  insert into friendrequest
+	  values(#{request_id}, #{accept_id}, #{m_friend})
+	</insert>
+	
+	<!-- 알림 테이블에 알림 등록 -->
+	<insert id="friend_request_allim" parameterType="allim">
+	  insert into allim (a_flag, a_no, read_check, id, accept_id, reg_date)
+	  values (#{a_flag}, allim_no_seq.nextval, 1, #{id}, #{accept_id}, sysdate)
+	</insert>
+	
+	<!-- 친구 신청 목록 가져오기 -->
+	<select id="getFriend_request" parameterType="String" resultType="member">
+	  select a.*
+	  from member a
+	  inner join friendrequest b
+	  on a.id = b.request_id
+	  where b.accept_id = #{id}
+	  and b.m_friend = 1
+	</select>
+	
+	<!-- 실제 친구 목록 가져오기 -->
+	<select id="getFriend_list" parameterType="String" resultType="member">
+	  select a.*
+	  from member a
+	  inner join friendlist b
+	  on a.id = b.id2
+	  where b.id1 = #{id}
+	  and b.m_friend = 1
+	</select>
+	
+	<!-- 인증키 대조를 위한 멤버용 인증키 생성 -->
+	<insert id="createAuthKey" parameterType="java.util.Map">
+	  insert into userAuth values(#{id}, #{authKey})
+	</insert>
+	
+	<!-- 인증키 대조를 위한 멤버용 인증키 얻어오기 -->
+	<select id="getAuthKey" parameterType="String" resultType="String">
+	  select authkey
+	  from userauth
+	  where id = #{id}
+	</select>
+
+	<!-- 인증 후 로그인 가능한 상태로 변경 -->
+	<update id="userAuth" parameterType="String">
+<!-- 	  <![CDATA[ -->
+<!-- 	  update member -->
+<!-- 	  set AUTH_STATUS = 1  -->
+<!--  	  where (select count(*) from userAuth where id = #{id}) > 0 -->
+<!-- 	  ]]> -->
+	  update member
+	  set auth_status = 1
+	  where id = #{id}
+	</update>
+
+   <!-- 친구 요청 수락 -->
+   <insert id="friend_accept" parameterType="friendlist">
+     insert all
+     into friendlist values (#{id1}, #{id2}, #{m_friend})
+     into friendlist values (#{id2}, #{id1}, #{m_friend})
+     select * from dual
+   </insert>
+   
+   <insert id="insert_likeid" parameterType="java.util.Map">
+     insert into board_like (id, board_no, like_id) values (#{id1}, #{board_no}, #{id2})
+   </insert>
+   
+   <select id="getbn_list" parameterType="String" resultType="int">
+     select board_no from board where id = #{id}
+   </select>
+   
+   <select id="mtof" parameterType="friendlist" resultType="int">
+   SELECT COUNT(*) FROM friendlist WHERE (id1=#{id1} and id2=#{id2}) or (id1=#{id2} and id2=#{id1})
+   </select>
+   
+   <update id="tofriend" parameterType="friendlist" >
+      UPDATE friendlist SET m_friend = 1
+      WHERE (id1=#{id1} and id2=#{id2}) or (id1=#{id2} and id2=#{id1})
+   </update>
+	
+	<!-- 친구 요청 거절 -->
+	<delete id="friend_reject" parameterType="friendreq">
+	  delete from friendrequest
+	  where request_id = #{request_id}
+	  and accept_id = #{accept_id}
+	  and m_friend = #{m_friend}
+	</delete>
+	
+	<!-- 친구 삭제 -->
+	<delete id="friend_delete" parameterType="friendlist">
+	  delete from friendlist
+	  where (id1, id2, m_friend)
+	  in ( (#{id1}, #{id2}, #{m_friend}),
+	  	   (#{id2}, #{id1}, #{m_friend}) )
+	</delete>
+	
+	<!-- 확인해라 위에 login_check(user_check)랑 겹친다 query문 -->
+	<!-- 특정 계정의 정보를 모두 가져옴 -->
+	<select id="getMember" parameterType="String" resultType="member">
+	  select *
+	  from member
+	  where id = #{id}
+	</select>
+	
+	<!-- 정보 수정(관리) -->
+	<update id="member_update" parameterType="member">
+	  update member
+	  set
+	   sido = #{sido}, sigungu = #{sigungu}, m_hobby = #{m_hobby},
+	   m_age = #{m_age}, m_flag = #{m_flag}, m_pr = #{m_pr}, 
+	   bg_img_file = #{bg_img_file}, bg_img_original = #{bg_img_original},
+	   prof_img_file = #{prof_img_file}, prof_img_original = #{prof_img_original}
+	  where id = #{id}
+	</update>
+	
+	<!-- 휴대폰 번호로 찾기 -->
+	<select id="find_check" parameterType="String" resultType="member">
+		select * from member
+		where phone = #{phone}
+	</select>
+	
+	<!-- 임시 비밀번호 발급 -->
+	<update id="updatePw" parameterType="java.util.Map">
+		update member
+		set pw = #{key}
+		where id = #{id}
+	</update>
+	
+	<!-- 비밀번호 변경 -->
+	<update id="changePw" parameterType="member">
+		update member
+		set pw = #{pw}
+		where id = #{id}
+	</update>
+	
+	<!-- 채팅 -->
+	<select id="mchat" parameterType="String" resultType="mfriendBean">	
+		SELECT id1, a.id2, a.m_friend, b.prof_img_file, b.name
+		FROM friendlist a, member b
+		WHERE a.id2=b.id
+		AND id1= #{id1}
+	</select>
+	
+	<insert id="insertWsbean" parameterType="wsbean">
+	INSERT into wsbean
+	VALUES(#{s_id}, #{r_id}, #{m}, SYSDATE)
+	</insert>
+	
+	<select id="out" resultType="wsbean" parameterType="wsbean">
+	SELECT * FROM wsbean
+	WHERE (s_id=#{s_id} OR s_id=#{r_id}) AND (r_id=#{s_id} OR r_id=#{r_id})
+	ORDER BY inputdate ASC
+	</select>
+	
+	<select id="mfriend_detail2" resultType="mfriendBean" parameterType="java.util.Map">
+		SELECT a.id1, a.id2, a.m_friend, b.prof_img_file, b.name, b.m_pr
+		FROM friendlist a, member b
+		WHERE a.id2=b.id
+		AND id1= #{id1}
+		AND id2 = #{id2}
+	</select>
+	
+	<!-- 관심사 조회 -->
+	<select id="member_hobby" parameterType="String" resultType="String">
+	  select m_hobby
+	  from member
+	  where id = #{id}
+	</select>
+	
+	<select id="recent" resultType="wsbean" parameterType="String">
+		SELECT s_id, r_id, m, inputdate FROM
+			(SELECT * FROM
+				(SELECT rownum rnum, s.* FROM
+					(SELECT * FROM wsbean
+					WHERE s_id=#{id1} or r_id=#{id1}
+					ORDER BY inputdate DESC)s)
+			WHERE rnum=1)
+	</select>
+	
+	<!-- 로그인 상태  추가-->
+	<update id="On_Off" parameterType="member">
+		update member 
+		set on_off	= #{on_off}
+		where id = #{id}
+	</update>
+</mapper>

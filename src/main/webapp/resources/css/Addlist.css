@@ -1,0 +1,135 @@
+@charset "UTF-8";
+* ul li {
+	list-style: none;
+}
+
+#wrap {
+	width: 100%;
+}
+
+
+.line {
+	width: 800px;
+}
+
+.text1{
+	text-align:center;
+}
+
+.main {
+	min-width: 1280px;
+	width:1280px;
+	margin:0 auto;
+}
+
+.file1{
+	margin-left:38%;
+	margin-top: 50px;
+	
+}
+.file2{
+	margin-left: 50%;
+    margin-top: -240px;
+	
+}
+
+.text2{	
+	float:left;
+}
+
+.text3{	
+	float:left;
+}
+
+.text4{
+	float:left;
+}
+
+.text5{	
+	float:left;
+}
+
+.text6{
+	float:left;
+	
+}
+
+.hobby{
+	margin-top:65px;
+	
+}
+input[type=checkbox]{
+	margin-top:24px;
+	margin-left:20px;
+	
+}
+
+.age{
+	margin-top:73px;
+	
+}
+
+.img_box1, .img_box2{
+	width: 150px;
+    height: 200px;
+    background: lightgray;
+	
+}
+
+input[type=file]{
+	width:151px;
+	height:40px;
+	margin-left:-1px;
+	text-decoration:none;
+	color:gray;
+	border:none;
+	background:#f1f1f1;
+	
+}
+.friend_matching{
+	margin-top:110px;
+	
+}
+
+.Add_menu{
+	margin-left:37%;
+	
+	
+}
+
+input[type=radio]{
+	margin-top:25px;
+	
+}
+
+.introduce{
+	margin-top:66px;
+	
+}
+
+
+input[type=submit]{
+	width:160px;
+	height:60px;
+	background:gray;
+	border:none;
+	text-align:center;
+	display:inline-block;
+	cursor:pointer;
+	text-decoration:none;
+	color:white;
+	font-size:16px;
+}
+input[type=reset]{
+	width:160px;
+	height:60px;
+	background:pink;
+	border:none;
+	text-align:center;
+	display:inline-block;
+	cursor:pointer;
+	text-decoration:none;
+	color:white;
+	font-size:16px;
+}
+

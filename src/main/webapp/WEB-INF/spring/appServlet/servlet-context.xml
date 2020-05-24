@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:websocket="http://www.springframework.org/schema/websocket"
+	xsi:schemaLocation="http://www.springframework.org/schema/websocket http://www.springframework.org/schema/websocket/spring-websocket-4.3.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
+	
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<annotation-driven />
+
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving up static resources in the ${webappRoot}/resources directory -->
+	<resources mapping="/resources/**" location="/resources/" />
+
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
+	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<beans:property name="prefix" value="jsp/" />
+		<beans:property name="suffix" value=".jsp" />
+	</beans:bean>
+	
+	<context:component-scan base-package="com.newface.pro" />
+	
+	<!-- 값 전달 x 페이지 -->
+	<view-controller path="/member_find_pw_form.nf" view-name="member/member_find_pw_ok"/>
+	<view-controller path="/member_find_pw_form_ok.nf" view-name="member/member_find_pw_form"/>
+	<view-controller path="/member_find.nf" view-name="member/member_find"/>
+	<view-controller path="/login.nf" view-name="member/login"/>
+	<view-controller path="/join2.nf" view-name="member/join2"/>
+		
+	<!-- Transaction Manager -->
+	<beans:bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+	  <beans:property name="dataSource" ref="dataSource"/>
+	</beans:bean>
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+	
+	<!-- 세션 아이디 없을 경우 -->
+	
+	<!-- interceptors -->
+	<interceptors>
+	  <interceptor>
+	    <mapping path="/member_login.nf"/>
+	    <beans:bean class="com.newface.pro.common.Interceptor"/>
+	  </interceptor>
+	</interceptors>
+	
+</beans:beans>

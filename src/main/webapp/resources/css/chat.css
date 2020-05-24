@@ -1,0 +1,157 @@
+body{
+	background-color: silver;
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+td{padding: 10px;}
+
+#firstrow{
+	height: 10%;
+	padding: 0px;
+	text-align: center;
+	color: #515151;
+}
+
+#secondrow{
+	height: 60%;
+	text-align:center;
+}
+
+.secondtd{
+	background: white;
+	padding: 10px;
+}
+
+.thirdtd{
+	padding: 0px 10px;
+}
+
+table, td{
+	 margin: 100px auto;
+	 padding: 0px;
+}
+tr{
+	margin: 0px;
+	padding: 0px;
+}
+
+.nopad1{
+	margin: 0px auto;
+	height:400px;
+}
+
+.nopad2{
+	margin: 0px auto;
+	padding: 20px;
+}
+
+.nopad{
+	height:400px;
+}
+
+#outer{
+	height: 400px;
+  	width: 100%;
+  	overflow: hidden;
+  	position: relative; 
+}
+#toyou {
+	width: 100%;
+	height: 399px;
+	overflow-y: scroll;
+	position: absolute;
+}
+
+.cloud {
+	background: #ebebeb;
+  	border-radius: 10px;
+  	color: #646464;
+ 	font-size: 12px;
+  	margin: 5px 0px;
+  	padding: 1px 1px 1px 10px;
+  	width: 55%;
+  	float: left;
+  	display: inline-block;
+	position: relative;
+}
+
+.cloud2 {
+	background: #05728f;
+  	border-radius: 10px;
+  	color: #fff;
+ 	font-size: 12px;
+  	margin: 5px 0px;
+  	padding: 1px 1px 1px 10px;
+  	width: 55%;
+  	float: right;
+  	display: inline-block;
+	position: relative;
+}
+
+.time_date {
+  color: #747474;
+  display: block;
+  font-size: 12px;
+  margin: 8px 0 0;
+}
+
+#buttondiv{
+	width: 100%;
+}
+/* .cloud3{
+	width: 100%;
+} */
+
+input:focus {
+    outline:none;
+    border:transparent;
+}
+
+#inputMsgBox {
+  background: rgba(0, 0, 0, 0) none repeat scroll 0 0;
+  color: #4c4c4c;
+  font-size: 15px;
+  min-height: 48px;
+  /* width: 100%; */
+}
+
+.time1{
+	 text-align: right;
+}
+
+.m_list {
+  border-bottom: 1px solid/*  #c4c4c4  */#1b1b1b;
+  margin: 0px;
+  padding: 0px;
+}
+.chat_img {
+  float: left;
+  width: 11%;
+}
+.chat_ib {
+  float: left;
+  padding: 0 0 0 15px;
+  width: 88%;
+}
+
+.chat_people{
+	overflow:hidden; clear:both;
+}
+
+#toyou {
+    -ms-overflow-style: none; 
+    overflow: -moz-scrollbars-none;
+}
+
+::-webkit-scrollbar { 
+    display: none; 
+}
+
+inputMsgBox{
+	width: 80%;
+	height: 30px;
+}
+
+#sendbutton{
+	background: url ('./resources/img/right-arrow.png') no-repeat;
+}

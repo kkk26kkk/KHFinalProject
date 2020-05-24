@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Timeline">
+
+<!-- 게시글 스크롤 플러스 -->
+<!-- mybatis로 동적쿼리 이용해서 뽑을것 -->
+<select id="listPlus" parameterType="java.util.Map" resultType="board">
+	<![CDATA[
+			select distinct b3.* , share_id, share_no, share_name, bs.content share_content
+				from (select rownum rnum,  b2.*
+						from (select b.*, like_status, like_id 
+								from( 
+									select  id, board_no, name, content, board_file, board_original, reg_date, like_date, like_count
+									from board
+									where id = #{id}
+									order by like_date desc
+									) b , board_like bl
+						  where b.id = bl.id and b.board_no = bl.board_no and like_id=#{like_id}
+						  order by like_date desc
+						  )	b2	
+					)b3 left outer join (select bs.board_no, bs.id, name, content, bs.share_name, bs.share_id, bs.share_no
+										from board_share bs, board b
+										where bs.share_no = b.board_no and bs.share_id = b.id) bs
+					on b3.board_no = bs.board_no and b3.id = bs.id
+			where rnum >= (#{page}*2-1) and rnum <= (#{page}*2)
+			order by like_date desc
+		]]>
+</select>
+
+<!-- 친구 정보 구해오기 -->
+<!-- <select id="getmemberinfo" parameterType="String" resultType="member"> -->
+<!-- 	select *  -->
+<!-- 	from member -->
+<!-- 	where id in(select id2  -->
+<!-- 				from friendlist  -->
+<!-- 				where id1 =  #{id}) -->
+<!-- </select> -->
+
+<!-- 친구 정보 구해오기 -->
+<select id="getmemberinfo" parameterType="String" resultType="member">
+	select * 
+	from member
+	where id in(select id2 
+				from friendlist 
+				where id1 =  #{id} and m_friend = 1)
+				order by on_off desc, name
+</select>
+
+<!-- 게시글 하나보기 페이지 -->
+<select id="get_oneboard" parameterType="map" resultType="board" >
+
+	<![CDATA[
+		select distinct b3.* , share_id, share_no, share_name, bs.content share_content
+				from (select  b2.*
+						from (select b.*, like_status, like_id 
+								from( 
+									select  id, board_no, name, content, board_file, board_original, reg_date, like_date, like_count
+									from board
+									where id = #{id} and board_no = #{board_no}
+									order by like_date desc
+									) b , board_like bl
+						  where b.id = bl.id and b.board_no = bl.board_no and like_id= #{like_id}
+						  order by like_date desc
+						  )	b2	
+					)b3 left outer join (select bs.board_no, bs.id, name, content, bs.share_name, bs.share_id, bs.share_no
+										from board_share bs, board b
+										where bs.share_no = b.board_no and bs.share_id = b.id) bs
+					on b3.board_no = bs.board_no and b3.id = bs.id
+	]]>
+</select>
+
+<!-- tm_info -->
+<select id="tm_info" parameterType="map" resultType="member">
+	select * 
+	from member 
+	where id = #{id}
+</select>
+
+<!-- tm_infoPlus -->
+<select id="infoshowplus" parameterType="map" resultType="member">
+	select * 
+	from member 
+	where id = #{id}
+	<choose>
+	<when test="id == sessionid"/>
+	<otherwise>
+	and id in (select id2 from friendlist where id1 = #{sessionid})
+	</otherwise>
+	</choose>
+</select>
+
+</mapper>

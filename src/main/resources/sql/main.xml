@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Main">
+	<!-- 게시글 스크롤 플러스 -->
+	<!-- mybatis로 동적쿼리 이용해서 뽑을것 -->
+	<select id="listPlus" parameterType="java.util.Map" resultType="board">
+		<![CDATA[
+			select b3.*,share_id, share_no, share_name, bs.content share_content	
+				from (select rownum rnum,  b2.* 
+						from (select b.*, like_status, like_id 
+								from( 
+									select  id, board_no, name, content, board_file, board_original, reg_date, like_date, like_count
+									from board
+									where id = #{id} or id in ( select id2 from friendlist where id1 = #{id} and m_friend = 1 )
+									order by like_date desc
+									) b , board_like bl
+						  where b.id = bl.id and b.board_no = bl.board_no and like_id=#{id}	
+						  order by like_date desc
+						  )	b2	
+					)b3 left outer join (select bs.board_no, bs.id, name, content, bs.share_name, bs.share_id, bs.share_no
+							from board_share bs, board b
+							where bs.share_no = b.board_no and bs.share_id = b.id) bs
+					on b3.board_no = bs.board_no and b3.id = bs.id
+			where rnum >= (#{page}*2-1) and rnum <= (#{page}*2)
+			order by like_date desc
+		]]>
+	</select>
+
+	<!-- 댓글 보이기 -->
+	<select id="ReplyShow" parameterType="java.util.Map" resultType="reply">
+		<![CDATA[
+			select a.*, b.prof_img_file 
+			from 
+				(select rownum rnum, id, board_no, reply_no, 
+						reply_id, name, content, re_ref, re_lev, re_seq, reg_date 
+				from (select * 
+						from (select distinct *  from reply where re_seq = 0) 
+						where id = #{id} and  board_no = #{board_no} 
+						order by re_ref asc , re_lev asc, re_seq desc )	 
+				) a
+			inner join member b
+			on a.reply_id = b.id
+			where rnum >= (#{r_page}*5-4) and rnum <= (#{r_page}*5) 
+		]]>
+	</select>
+	
+	<!-- 유저 정보 가져오기 -->
+	<select id="userInfo" parameterType="String" resultType="member">
+		select * from member where id = #{id}
+	</select>
+	
+	
+	<!-- 게시글 추가 -->	
+ 	<insert id="insertBoard" parameterType="board">
+		insert into board ( id, board_no, name, content, board_file, board_original, reg_date, like_date, like_count )
+		values( #{id}, #{board_no}, #{name}, #{content}, #{board_file}, #{board_original}, sysdate, sysdate, 0 )
+	</insert> 
+
+	
+	<!-- 게시글 board_no 구하기 -->
+	<select id="count_bn" parameterType="String" resultType="int">
+		select nvl(max(board_no), 0) from board where id = #{id}
+	</select>
+	
+	<!-- 게시글 하나 보여주기 	 -->
+	<select id="get_board" parameterType="java.util.Map" resultType="board">
+		select * from board where id = #{id} and board_no = #{board_no}
+	</select>
+
+	<!-- 댓글 플러스 -->
+	<select id="ReplyShowPlus" parameterType="java.util.Map" resultType="reply">
+		<![CDATA[
+			select a.*, b.prof_img_file 
+			from 
+				(select rownum rnum, id, board_no, reply_no, 
+						reply_id, name, content, re_ref, re_lev, re_seq, reg_date 
+				from (select * 
+						from (select distinct *  from reply where re_seq = 0)
+						where id = #{id} and  board_no = #{board_no} 
+						order by re_ref asc , re_lev asc, re_seq desc )	 
+				) a
+		    inner join member b
+			on a.reply_id = b.id
+			where rnum >= (#{r_page}*5-4) and rnum <= (#{r_page}*5) 
+		]]>
+	</select>
+	
+	<!-- 댓글 reply_no 최대값 -->
+	<select id="count_rn" parameterType="map" resultType="int">
+		select count(*) from reply where id = #{id} and board_no = #{board_no}
+	</select>
+	
+	<!-- 댓글 추가 -->
+	<select id="insertReply" parameterType="reply">
+		insert into reply(id, board_no, reply_no, reply_id, name, content, re_ref, re_lev, re_seq, reg_date)
+		values(#{id}, #{board_no}, #{reply_no}, #{reply_id}, #{name}, #{content}, #{reply_no}, 0, 0, sysdate)	
+	</select>
+	
+	<!-- 댓글의 댓글 하나보기 -->
+	<select id="get_reply" parameterType="map" resultType="reply">
+		select a.*, b.prof_img_file
+		from reply a
+		inner join member b
+		on a.reply_id = b.id
+		where a.id = #{id} and board_no = #{board_no} and reply_no = #{reply_no}
+	</select>
+	
+	<!-- 댓글의 댓글 보기 -->
+	<select id="re_replyshow" parameterType="map" resultType="reply">
+		<![CDATA[
+		select a.*, b.prof_img_file
+			from 
+			(select rownum rnum, id, board_no, reply_no, reply_id, name, content, re_ref, re_lev, re_seq, reg_date 
+				from (select * 
+						from (select distinct *  from reply where re_seq > 0)
+						where id = #{id} and  board_no = #{board_no} and re_ref = #{re_ref}
+						order by re_ref asc , re_lev asc, re_seq desc)	 
+							) a
+			inner join member b
+			on a.reply_id = b.id
+			where rnum >= (#{r_r_page}*5-4) and rnum <= (#{r_r_page}*5) 
+		]]>
+	</select>
+	
+	<!-- like_date 수정 -->
+	<update id="updatelike_date" parameterType="map">
+		update board 
+		set
+			like_date = sysdate
+		where 
+			id = #{id} and board_no = #{board_no}
+	</update>
+	
+	<!-- like_count 수정 -->
+	<update id="updatelike_count" parameterType="map">
+		update board
+		set 
+			like_count = like_count+1
+		where
+			id = #{id} and board_no = #{board_no}
+	</update>
+	
+	<!-- like_count 수정 down -->
+	<update id="updatelike_count_down" parameterType="map">
+		update board
+		set 
+			like_count = like_count-1
+		where
+			id = #{id} and board_no = #{board_no}
+	</update>
+	
+	<!-- 레벨 수정 -->
+	<update id="reply_level" parameterType="reply">
+		update reply
+		set
+			re_seq = re_seq+1
+		where
+			re_ref = #{re_ref} and re_seq > #{re_seq}
+	</update>
+	
+	<!-- 답글 추가 -->
+	<insert id="re_replyInsert" parameterType="reply">
+		insert into reply(id, board_no, reply_no, reply_id, name, content, re_ref, re_lev, re_seq, reg_date)
+		values(#{id}, #{board_no}, #{reply_no}, #{reply_id}, #{name}, #{content}, #{re_ref}, #{re_lev}, #{re_seq}, sysdate)	
+	</insert>
+	
+	<!-- board_like 수정 -->
+	<update id="updateboard_like" parameterType="map">
+		update board_like
+		set like_status = 1
+		where id = #{id} and board_no = #{board_no} and like_id = #{like_id}
+	</update>
+	
+	<!-- 좋아요 상태 확인 -->
+	<select id="checkboard_like" parameterType="map" resultType="int">
+		select like_status
+		from board_like
+		where id = #{id} and board_no = #{board_no} and like_id = #{like_id}
+	</select>
+	
+	<!-- 좋아요 ON -->
+	<update id="status_on" parameterType="map">
+		update board_like
+		set like_status = 1
+		where
+			id = #{id} and board_no = #{board_no} and like_id = #{like_id}
+	</update>
+	
+	<!-- 좋아요 Off -->
+	<update id="status_off" parameterType="map">
+		update board_like
+		set like_status = 0
+		where
+			id = #{id} and board_no = #{board_no} and like_id = #{like_id}
+	</update>
+	
+	<!-- 게시물 추가시 board_like insert -->
+	<insert id="insertboard_like_init" parameterType="board">
+		insert into board_like(id, board_no, like_id, like_status)
+		values ( #{id}, #{board_no}, #{like_id}, null)
+	</insert>
+	
+	<!-- 친구들 구해오기 -->
+	<select id="getFriends" parameterType="String" resultType="friendlist">
+		select * from friendlist where id1 = #{id}
+	</select>
+	
+	<!-- 친구 정보 구해오기 -->
+	<select id="getmemberinfo" parameterType="String" resultType="member">
+		select * 
+		from member
+		where id in(select id2
+					from friendlist 
+					where id1 =  #{id} and m_friend = 1)
+					order by on_off desc, name
+	</select>
+	
+	<!-- 게시물 삭제 -->
+	<delete id="deleteboard" parameterType="map">
+		delete from board where id = #{id} and board_no = #{board_no}
+	</delete>
+	
+	<!-- 삭제 시 게시물 한개 불러오기 -->
+	<select id="one_board" parameterType="map" resultType="board">
+			select b.*, bs.share_id, bs.share_no
+			from board b left outer join (select bs.board_no, bs.id, name, content, bs.share_name, bs.share_id, bs.share_no
+										from board_share bs, board b
+										where bs.share_no = b.board_no and bs.share_id = b.id) bs
+				on b.board_no = bs.board_no and b.id = bs.id
+			where b.id = #{id} and b.board_no = #{board_no}
+	</select>
+	
+	<!-- 공유 테이블 추가 -->
+	<insert id="insertshare" parameterType="map">
+		insert into board_share(id, board_no, share_id, share_no, share_name) 
+		values(#{id}, #{board_no}, #{share_id}, #{share_no}, #{share_name})
+	</insert>
+	
+	<!-- 원본글 삭제시 공유한 글 같이 삭제 -->
+	<delete id="deleteshareboard" parameterType="map">
+		delete from board 
+		where  id in (select b.id
+				from board b left outer join (select bs.board_no, bs.id, name, content, bs.share_name, bs.share_id, bs.share_no
+											from board_share bs, board b
+											where bs.share_no = b.board_no and bs.share_id = b.id) bs
+					on b.board_no = bs.board_no and b.id = bs.id
+				where bs.share_id = #{id} and  bs.share_no = #{board_no})
+		and board_no in (select b.board_no
+				from board b left outer join (select bs.board_no, bs.id, name, content, bs.share_name, bs.share_id, bs.share_no
+											from board_share bs, board b
+											where bs.share_no = b.board_no and bs.share_id = b.id) bs
+					on b.board_no = bs.board_no and b.id = bs.id
+				where bs.share_id = #{id} and  bs.share_no = #{board_no})
+	</delete>
+	
+	<!-- 좋아요 알림 -->
+	<insert id="like_allim" parameterType="allim">
+		insert into allim (a_flag, a_no, read_check, id, accept_id, board_no, reg_date)
+		values (#{a_flag}, allim_no_seq.nextval, 1, #{id}, #{accept_id}, #{board_no}, sysdate)
+	</insert>
+	
+	<!-- 댓글 등록 알림 -->
+	<insert id="reply_allim" parameterType="allim">
+		insert into allim (a_flag, a_no, read_check, id, accept_id, board_no, reply_no, reg_date)
+		values (#{a_flag}, allim_no_seq.nextval, 1, #{id}, #{accept_id}, #{board_no}, #{reply_no}, sysdate)
+	</insert>
+	
+	<!-- 메인용 친구 신청 목록 가져오기 -->
+	<select id="getFriend_request" parameterType="String" resultType="member">
+	  <![CDATA[
+	  select *
+	  from (select a.*
+			  from member a
+			  inner join friendrequest b
+			  on a.id = b.request_id
+			  where b.accept_id = #{id}
+			  and b.m_friend = 1
+			  order by dbms_random.value )
+	  where rownum >= 1 and rownum <= 4
+	  ]]>
+	</select>
+	
+	<!-- 메인용 매칭 요청 목록 가져오기 -->
+	<select id="getMfriend_request" parameterType="String" resultType="member">
+	  <![CDATA[
+	  select *
+	  from (select a.*
+			  from member a
+			  inner join friendrequest b
+			  on a.id = b.request_id
+			  where b.accept_id = #{id}
+			  and b.m_friend = 2
+			  order by dbms_random.value )
+	  where rownum >= 1 and rownum <= 4
+	  ]]>
+	</select>
+</mapper>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Matching">
+  <!-- 매칭 친구 검색 -->
+  <select id="matching_search" parameterType="java.util.Map" resultType="member">
+    select distinct a.*, b.id2, c.accept_id
+    from member a
+    left outer join friendlist b
+    on b.id1 = #{id} and a.id = b.id2
+    left outer join friendrequest c
+    on c.request_id = #{id} and a.id = c.accept_id
+    where auth_status = 1
+    <if test="sido != null">
+      and sido = #{sido}
+    </if>
+    <if test="sigungu != null">
+      and sigungu = #{sigungu}
+ 	</if>
+ 	<if test="m_age != null">
+ 	  and m_age = #{m_age}
+ 	</if>
+ 	<if test="m_gender != null">
+ 	  and gender = #{m_gender}
+ 	</if>
+ 	and m_flag = 1 
+ 	and
+    <foreach collection="m_hobby" item="item" index="index" open="(" separator="or" close=")">
+   	  m_hobby like ${m_hobby[index]} <!-- $는 문자열로 자동으로 바뀌지 않고 값을 있는 그대로 받아옴 -->
+ 	</foreach>
+ 	order by dbms_random.value
+  </select>
+  
+    <!-- 매칭 요청 목록 가져오기 -->
+	<select id="getMfriend_request" parameterType="String" resultType="member">
+	  select a.*
+	  from member a
+	  inner join friendrequest b
+	  on a.id = b.request_id
+	  where b.accept_id = #{id}
+	  and b.m_friend = 2
+	</select>
+	
+	<!-- 매칭 친구 목록 가져오기 -->
+	<select id="getMfriend_list" parameterType="String" resultType="member">
+	  select a.*
+	  from member a
+	  inner join friendlist b
+	  on a.id = b.id2
+	  where b.id1 = #{id}
+	  and b.m_friend = 2
+	</select>
+	
+	<!-- 매칭 요청 수락 -->
+	<insert id="matching_accept" parameterType="friendlist">
+	  insert all
+	  into friendlist values (#{id1}, #{id2}, #{m_friend})
+	  into friendlist values (#{id2}, #{id1}, #{m_friend})
+	  select * from dual
+	</insert>
+	
+	<!-- 매칭 요청 거절 -->
+	<delete id="matching_reject" parameterType="friendreq">
+	  delete from friendrequest
+	  where request_id = #{request_id}
+	  and accept_id = #{accept_id}
+	  and m_friend = #{m_friend}
+	</delete>
+	
+	<!-- 매칭 친구 삭제 -->
+	<delete id="matching_delete" parameterType="friendlist">
+	  delete from friendlist
+	  where (id1, id2, m_friend)
+	  in ( (#{id1}, #{id2}, #{m_friend}), 
+	  	   (#{id2}, #{id1}, #{m_friend}) )
+	</delete>
+</mapper>
